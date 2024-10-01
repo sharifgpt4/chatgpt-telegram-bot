@@ -31,7 +31,7 @@ from config import (
     update_initial_model,
     update_models_buttons,
     update_language_status,
-    update_first_buttons_message,
+    update_first_buttons_message, SUBSCRIPTIONS,
 )
 
 from utils.i18n import strings
@@ -510,6 +510,30 @@ async def button_press(update, context):
             message = await callback_query.edit_message_text(
                 text=escape(info_message, italic=False),
                 reply_markup=InlineKeyboardMarkup(update_menu_buttons(PLUGINS, "_PLUGINS", convo_id)),
+                parse_mode='MarkdownV2'
+            )
+
+        if data.endswith("_SUBSCRIPTION"):
+            data = data[:-8]
+            try:
+                current_data = Users.get_config(convo_id, data)
+                Users.set_config(convo_id, data, not current_data)
+            except Exception as e:
+                logger.info(e)
+            try:
+                info_message = update_info_message(convo_id)
+                message = await callback_query.edit_message_text(
+                    text=escape(info_message, italic=False),
+                    reply_markup=InlineKeyboardMarkup(update_menu_buttons(SUBSCRIPTIONS, "_PLUGINS", convo_id)),
+                    parse_mode='MarkdownV2'
+                )
+            except Exception as e:
+                logger.info(e)
+                pass
+        elif data.startswith("SUBSCRIPTION"):
+            message = await callback_query.edit_message_text(
+                text=escape(info_message, italic=False),
+                reply_markup=InlineKeyboardMarkup(update_menu_buttons(SUBSCRIPTIONS, "_SUBSCRIPTION", convo_id)),
                 parse_mode='MarkdownV2'
             )
 

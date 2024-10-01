@@ -70,6 +70,14 @@ LANGUAGES_TO_CODE = {
     "Russian": "ru",
 }
 
+SUBSCRIPTIONS = {
+    "BASTE 1": False,
+    "BASTE 2": False,
+    "BASTE 3": False,
+    "BASTE 4": False,
+}
+
+
 current_date = datetime.now()
 Current_Date = current_date.strftime("%Y-%m-%d")
 systemprompt = os.environ.get('SYSTEMPROMPT', prompt.system_prompt.format(LANGUAGE, Current_Date))
@@ -149,6 +157,7 @@ class UserConfig:
         preferences=None,
         plugins=None,
         languages=None,
+        subscriptions=None,
         systemprompt=None,
         claude_systemprompt=None
     ):
@@ -161,6 +170,7 @@ class UserConfig:
         self.engine = engine
         self.preferences = preferences
         self.plugins = plugins
+        self.subscriptions = subscriptions
         self.systemprompt = systemprompt
         self.claude_systemprompt = claude_systemprompt
         self.users = NestedDict()
@@ -171,9 +181,11 @@ class UserConfig:
         self.users["global"].update(self.preferences)
         self.users["global"].update(self.plugins)
         self.users["global"].update(self.languages)
+        self.users["global"].update(self.subscriptions)
         self.mode = mode
         self.load_all_configs()
         self.parameter_name_list = list(self.users["global"].keys())
+        print(self.parameter_name_list)
         for key in self.parameter_name_list:
             update_user_config("global", key, self.users["global"][key])
 
@@ -215,6 +227,7 @@ class UserConfig:
             self.users[self.user_id].update(self.preferences)
             self.users[self.user_id].update(self.plugins)
             self.users[self.user_id].update(self.languages)
+            self.users[self.user_id].update(self.subscriptions)
             for key in self.users[self.user_id].keys():
                 update_user_config(user_id, key, self.users[self.user_id][key])
 
@@ -263,7 +276,7 @@ class UserConfig:
     def __str__(self):
         return str(self.users)
 
-Users = UserConfig(mode=CHAT_MODE, api_key=API, api_url=API_URL, engine=GPT_ENGINE, preferences=PREFERENCES, plugins=PLUGINS, language=LANGUAGE, languages=LANGUAGES, systemprompt=systemprompt, claude_systemprompt=claude_systemprompt)
+Users = UserConfig(mode=CHAT_MODE, api_key=API, api_url=API_URL, engine=GPT_ENGINE, preferences=PREFERENCES, plugins=PLUGINS, language=LANGUAGE, languages=LANGUAGES,subscriptions=SUBSCRIPTIONS, systemprompt=systemprompt, claude_systemprompt=claude_systemprompt)
 
 temperature = float(os.environ.get('temperature', '0.5'))
 CLAUDE_API = os.environ.get('claude_api_key', None)
@@ -600,6 +613,10 @@ def update_first_buttons_message(chatid=None):
         [
             InlineKeyboardButton(strings['button_language'][lang], callback_data="LANGUAGE"),
             InlineKeyboardButton(strings['button_plugins'][lang], callback_data="PLUGINS"),
+        ],
+        [
+            InlineKeyboardButton(strings['button_subscription'][lang], callback_data="SUBSCRIPTION"),
+
         ],
     ]
     return first_buttons
